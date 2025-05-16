@@ -37,5 +37,8 @@ async def queue(ctx):
         await ctx.send("Jugadores en cola: " + ", ".join(current_queue))
     else:
         await ctx.send("La cola está vacía.")
-
-bot.run(TOKEN)
+try:
+    print ("token: ",TOKEN)
+    bot.run(TOKEN)
+except Exception as e:
+    print(f"Error al iniciar el bot: {e}")
