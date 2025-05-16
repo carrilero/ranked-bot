@@ -1,11 +1,22 @@
+print("Iniciando bot...")
+
 import discord
+print("discord importado")
+
 from discord.ext import commands
+print("commands importado")
+
 from queue import add_player, remove_player, get_queue, get_next_match
+print("funciones de queue importadas")
+
 from dotenv import load_dotenv
+print("dotenv importado")
+
 import os
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
+print(f"TOKEN: {TOKEN}")
 
 intents = discord.Intents.default()
 intents.message_content = True
