@@ -6,7 +6,7 @@ print("discord importado")
 from discord.ext import commands
 print("commands importado")
 
-from matchnaking_que import add_player, remove_player, get_que, get_next_match
+from matchmaking_que import add_player, remove_player, get_que, get_next_match
 print("funciones de que importadas")
 
 from dotenv import load_dotenv
