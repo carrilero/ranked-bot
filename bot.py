@@ -6,7 +6,7 @@ print("discord importado")
 from discord.ext import commands
 print("commands importado")
 
-from queue import add_player, remove_player, get_queue, get_next_match
+from match_queue import add_player, remove_player, get_queue, get_next_match
 print("funciones de queue importadas")
 
 from dotenv import load_dotenv
