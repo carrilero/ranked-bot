@@ -6,8 +6,8 @@ print("discord importado")
 from discord.ext import commands
 print("commands importado")
 
-from match_queue import add_player, remove_player, get_queue, get_next_match
-print("funciones de queue importadas")
+from matchnaking_que import add_player, remove_player, get_que, get_next_match
+print("funciones de que importadas")
 
 from dotenv import load_dotenv
 print("dotenv importado")
@@ -32,7 +32,7 @@ async def ranked(ctx):
     add_player(ctx.author.name)
     await ctx.send(f"{ctx.author.name} se ha unido a la cola.")
     
-    if len(get_queue()) >= 4:
+    if len(get_que()) >= 4:
         match = get_next_match()
         await ctx.send(f"🎮 Nueva partida: {', '.join(match)}")
 
@@ -42,10 +42,10 @@ async def leave(ctx):
     await ctx.send(f"{ctx.author.name} ha salido de la cola.")
 
 @bot.command()
-async def queue(ctx):
-    current_queue = get_queue()
-    if current_queue:
-        await ctx.send("Jugadores en cola: " + ", ".join(current_queue))
+async def que(ctx):
+    current_que = get_que()
+    if current_que:
+        await ctx.send("Jugadores en cola: " + ", ".join(current_que))
     else:
         await ctx.send("La cola está vacía.")
 try:
