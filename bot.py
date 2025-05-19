@@ -1,39 +1,43 @@
-# bot.py
 import discord
-from discord.ext import commands, tasks
-from config import DISCORD_TOKEN, LOBBY_CHANNEL_NAME
-from ui_handler import QueueView
-from match_manager import start_match
-from queue_manager import is_ready
-from utils import init_db            # ← Importa la función
-import logging
+from discord.ext import commands
+import config
+from ui_handler import create_queue_message  # Importamos la función que crea el mensaje de la cola
 
-logging.basicConfig(level=logging.INFO)
+intents = discord.Intents.default()
+intents.message_content = True
+intents.guilds = True
 
-intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    logging.info(f"Bot conectado como {bot.user}")
-
-    # Inicializa las tablas antes de cualquier otra cosa
-    init_db()
+    print(f'✅ Bot conectado como {bot.user.name}')
 
     guild = discord.utils.get(bot.guilds)
-    lobby = discord.utils.get(guild.text_channels, name=LOBBY_CHANNEL_NAME)
-    if not lobby:
-        lobby = await guild.create_text_channel(LOBBY_CHANNEL_NAME)
+    if not guild:
+        print("❌ No se encontró ningún servidor.")
+        return
 
-    view = QueueView(bot)
-    await lobby.send(content="**Cola de rankeds:** 0/8 jugadores", view=view)
+    # Busca un canal de texto llamado "ranked-queue"
+    channel = discord.utils.get(guild.text_channels, name="ranked-queue")
 
-    # Arranca el loop que revisa la cola
-    check_queue.start(guild)
+    if not channel:
+        print("📢 Canal 'ranked-queue' no encontrado, creándolo...")
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=False)
+        }
+        channel = await guild.create_text_channel("ranked-queue", overwrites=overwrites)
+    else:
+        print("📢 Canal 'ranked-queue' ya existe.")
 
-@tasks.loop(seconds=5)
-async def check_queue(guild):
-    if is_ready():
-        await start_match(bot, guild)
+    # Envía el mensaje de la cola si no existe uno persistente
+    messages = [message async for message in channel.history(limit=10)]
+    if not any(msg.author == bot.user for msg in messages):
+        await create_queue_message(channel, bot)
+        print("✅ Mensaje de la cola creado.")
+    else:
+        print("ℹ️ Ya hay un mensaje del bot en el canal.")
 
-bot.run(DISCORD_TOKEN)
+# Aquí puedes añadir otros eventos o comandos que tu bot tenga
+
+bot.run(config.TOKEN)
