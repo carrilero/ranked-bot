@@ -4,9 +4,10 @@ from discord.ext import commands, tasks
 from config import DISCORD_TOKEN, LOBBY_CHANNEL_NAME
 from ui_handler import QueueView
 from match_manager import start_match
-from queue_manager import is_ready
+from queue_manager import is_ready, get_queue
 from utils import init_db            # ← Importa la función
 import logging
+from ui_handler import QueueView
 
 logging.basicConfig(level=logging.INFO)
 
@@ -25,8 +26,17 @@ async def on_ready():
     if not lobby:
         lobby = await guild.create_text_channel(LOBBY_CHANNEL_NAME)
 
-    view = QueueView(bot)
-    await lobby.send(content="**Cola de rankeds:** 0/8 jugadores", view=view)
+    # —    Aquí reemplazamos el envío simple por nuestro embed + QueueView —
+    # 1. Creamos el embed inicial (sin jugadores)
+    embed = discord.Embed(
+        title="🎮 Cola de Rankeds",
+        description="No hay jugadores en la cola.",
+        color=discord.Color.blue()
+    )
+    # 2. Enviamos el mensaje y capturamos el objeto
+    static_msg = await lobby.send(embed=embed, view=QueueView(None))
+    # 3. Asignamos la referencia al view para que pueda editarse
+    static_msg.view.static_message = static_msg
 
     # Arranca el loop que revisa la cola
     check_queue.start(guild)

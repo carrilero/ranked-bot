@@ -1,26 +1,33 @@
-import discord
-from discord import ui
-from queue_manager import add_player, remove_player, get_queue, is_ready
-
 class QueueView(ui.View):
-    def __init__(self, bot):
+    def __init__(self, static_message):
         super().__init__(timeout=None)
-        self.bot = bot
+        self.static_message = static_message
 
-    @ui.button(label="Unirse a la cola", style=discord.ButtonStyle.green, custom_id="join_queue")
-    async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
-        user = interaction.user.id
-        add_player(user)
-        await interaction.response.send_message("Te has unido a la cola.", ephemeral=True)
-        await self.update_message(interaction)
+    @ui.button(label="Unirse", style=discord.ButtonStyle.green, custom_id="join_queue")
+    async def join(self, interaction, button):
+        user = interaction.user
+        add_player(user.id, user.display_name)
+        await self.refresh_message()
+        await interaction.response.defer()
 
-    @ui.button(label="Salir de la cola", style=discord.ButtonStyle.red, custom_id="leave_queue")
-    async def leave(self, interaction: discord.Interaction, button: discord.ui.Button):
-        user = interaction.user.id
-        remove_player(user)
-        await interaction.response.send_message("Has salido de la cola.", ephemeral=True)
-        await self.update_message(interaction)
+    @ui.button(label="Salir", style=discord.ButtonStyle.red, custom_id="leave_queue")
+    async def leave(self, interaction, button):
+        user = interaction.user
+        remove_player(user.id)
+        await self.refresh_message()
+        await interaction.response.defer()
 
-    async def update_message(self, interaction):
-        queue = get_queue()
-        await interaction.message.edit(content=f"**Cola de rankeds:** {len(queue)}/8 jugadores", view=self)
+    async def refresh_message(self):
+        queue = get_queue()  # devuelve [(id, name), ...]
+        if queue:
+            lines = [f"{i+1}. {name}" for i, (_, name) in enumerate(queue)]
+            desc = "\n".join(lines)
+        else:
+            desc = "No hay jugadores en la cola."
+
+        embed = discord.Embed(
+            title="🎮 Cola de Rankeds",
+            description=desc,
+            color=discord.Color.blue()
+        )
+        await self.static_message.edit(embed=embed, view=self)
