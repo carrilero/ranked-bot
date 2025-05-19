@@ -12,5 +12,4 @@ LOBBY_CHANNEL_NAME = "ranked-lobby"
 CATEGORY_NAME = "Partida Ranked"
 
 # Votaciones
-GAME_MODES = ["Punto Caliente", "Buscar y Destruir", "Control"]
-MAPS = ["Mapa 1", "Mapa 2", "Mapa 3"]  # Personaliza según el juego
+MAPS = ["Hacienda", "Red Card", "Rewind", "Skyline", "Vault"]  # Personaliza según el juego
