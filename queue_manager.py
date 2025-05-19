@@ -29,7 +29,7 @@ def form_teams():
     if is_ready():
         selected = [player_queue.pop(0) for _ in range(2)]
         random.shuffle(selected)
-        team1, team2 = selected[0], selected[1]
+        team1, team2 = [selected[0]], [selected[1]]
         active_match = (team1, team2)
         logging.info(f"[Match] Equipos creados: {team1} vs {team2}")
         return team1, team2
