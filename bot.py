@@ -1,55 +1,39 @@
-print("Iniciando bot...")
-
+# bot.py
 import discord
-print("discord importado")
+from discord.ext import commands, tasks
+from config import DISCORD_TOKEN, LOBBY_CHANNEL_NAME
+from ui_handler import QueueView
+from match_manager import start_match
+from queue_manager import is_ready
+from utils import init_db            # ← Importa la función
+import logging
 
-from discord.ext import commands
-print("commands importado")
+logging.basicConfig(level=logging.INFO)
 
-from matchmaking_que import add_player, remove_player, get_que, get_next_match
-print("funciones de que importadas")
-
-from dotenv import load_dotenv
-print("dotenv importado")
-
-import os
-
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
-print(f"TOKEN: {TOKEN}")
-
-intents = discord.Intents.default()
-intents.message_content = True
-
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f'Bot conectado como {bot.user}')
+    logging.info(f"Bot conectado como {bot.user}")
 
-@bot.command()
-async def ranked(ctx):
-    add_player(ctx.author.name)
-    await ctx.send(f"{ctx.author.name} se ha unido a la cola.")
-    
-    if len(get_que()) >= 4:
-        match = get_next_match()
-        await ctx.send(f"🎮 Nueva partida: {', '.join(match)}")
+    # Inicializa las tablas antes de cualquier otra cosa
+    init_db()
 
-@bot.command()
-async def leave(ctx):
-    remove_player(ctx.author.name)
-    await ctx.send(f"{ctx.author.name} ha salido de la cola.")
+    guild = discord.utils.get(bot.guilds)
+    lobby = discord.utils.get(guild.text_channels, name=LOBBY_CHANNEL_NAME)
+    if not lobby:
+        lobby = await guild.create_text_channel(LOBBY_CHANNEL_NAME)
 
-@bot.command()
-async def que(ctx):
-    current_que = get_que()
-    if current_que:
-        await ctx.send("Jugadores en cola: " + ", ".join(current_que))
-    else:
-        await ctx.send("La cola está vacía.")
-try:
-    print ("token: ",TOKEN)
-    bot.run(TOKEN)
-except Exception as e:
-    print(f"Error al iniciar el bot: {e}")
+    view = QueueView(bot)
+    await lobby.send(content="**Cola de rankeds:** 0/8 jugadores", view=view)
+
+    # Arranca el loop que revisa la cola
+    check_queue.start(guild)
+
+@tasks.loop(seconds=5)
+async def check_queue(guild):
+    if is_ready():
+        await start_match(bot, guild)
+
+bot.run(DISCORD_TOKEN)
