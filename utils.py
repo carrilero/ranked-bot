@@ -52,4 +52,7 @@ def init_db():
         conn.commit()
         print("✅ Tablas de la base de datos inicializadas.")
     except Exception as e:
-        print(f"❌ Error inicializando la base de
+        print(f"❌ Error inicializando la base de datos: {e}")
+    finally:
+        if conn:
+            conn.close()
