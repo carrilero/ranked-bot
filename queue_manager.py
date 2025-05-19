@@ -22,14 +22,14 @@ def get_queue():
     return player_queue.copy()
 
 def is_ready():
-    return len(player_queue) >= 8
+    return len(player_queue) >= 2
 
 def form_teams():
     global active_match
     if is_ready():
-        selected = [player_queue.pop(0) for _ in range(8)]
+        selected = [player_queue.pop(0) for _ in range(2)]
         random.shuffle(selected)
-        team1, team2 = selected[:4], selected[4:]
+        team1, team2 = selected[0], selected[1]
         active_match = (team1, team2)
         logging.info(f"[Match] Equipos creados: {team1} vs {team2}")
         return team1, team2
