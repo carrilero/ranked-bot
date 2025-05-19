@@ -1,3 +1,8 @@
+import discord
+from discord import ui
+from queue_manager import add_player, remove_player, get_queue
+
+
 class QueueView(ui.View):
     def __init__(self, static_message):
         super().__init__(timeout=None)
