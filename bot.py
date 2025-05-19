@@ -17,8 +17,6 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
     logging.info(f"Bot conectado como {bot.user}")
-
-    # Inicializa las tablas antes de cualquier otra cosa
     init_db()
 
     guild = discord.utils.get(bot.guilds)
@@ -26,19 +24,23 @@ async def on_ready():
     if not lobby:
         lobby = await guild.create_text_channel(LOBBY_CHANNEL_NAME)
 
-    # —    Aquí reemplazamos el envío simple por nuestro embed + QueueView —
-    # 1. Creamos el embed inicial (sin jugadores)
+    # 1) Creamos el embed inicial
     embed = discord.Embed(
         title="🎮 Cola de Rankeds",
         description="No hay jugadores en la cola.",
         color=discord.Color.blue()
     )
-    # 2. Enviamos el mensaje y capturamos el objeto
-    static_msg = await lobby.send(embed=embed, view=QueueView(None))
-    # 3. Asignamos la referencia al view para que pueda editarse
-    static_msg.view.static_message = static_msg
 
-    # Arranca el loop que revisa la cola
+    # 2) Creamos la vista SIN pasar None, sino placeholder
+    view = QueueView(None)
+
+    # 3) Enviamos el mensaje y capturamos la referencia
+    static_msg = await lobby.send(embed=embed, view=view)
+
+    # 4) Inyectamos esa referencia en la vista
+    view.static_message = static_msg
+
+    # 5) Arrancamos el loop
     check_queue.start(guild)
 
 @tasks.loop(seconds=5)
