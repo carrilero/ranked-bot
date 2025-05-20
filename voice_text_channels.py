@@ -21,10 +21,20 @@ async def create_private_channels(guild, team1, team2):
 
     return text_channel, voice1, voice2
 
+
 async def delete_private_channels(text_channel: discord.TextChannel, voice_channels: list[discord.VoiceChannel]):
     try:
+        # Guardamos la categoría antes de borrar canales
+        category = text_channel.category
+
+        # Borramos el canal de texto y los de voz
         await text_channel.delete()
         for vc in voice_channels:
             await vc.delete()
+
+        # Finalmente borramos la categoría completa
+        if category:
+            await category.delete()
+
     except Exception as e:
-        logging.error(f"[Voice/Text] Error borrando canales: {e}")
+        logging.error(f"[Voice/Text] Error borrando canales o categoría: {e}")

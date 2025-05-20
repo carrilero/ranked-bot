@@ -1,10 +1,14 @@
-# match_manager.py
 from queue_manager import form_teams, clear_active_match, reset_queue, add_player
 from voice_text_channels import create_private_channels, delete_private_channels
 from voting_system import start_map_voting, start_result_voting
+from bot import queue_view  # Importar la vista global para refrescar la cola
 import logging
 
 async def start_match(bot, guild):
+    """
+    Inicia una partida cuando la cola esté lista.
+    Crea canales privados, lanza votación de mapas y gestiona la transición a la votación final.
+    """
     # 1. Formamos equipos
     team1, team2 = form_teams()
     if not team1:
@@ -22,15 +26,19 @@ async def start_match(bot, guild):
         "voice_channels": [voice1, voice2]
     }
     reset_queue()
+    # Refrescar el mensaje de cola en el canal principal
+    if queue_view:
+        await queue_view.refresh_message()
 
     # 4. Definimos el callback usando 'state' del scope exterior
     async def on_map_voted(winning_map, players, cancelled=False):
         if cancelled:
             logging.info("[Match] Votación de mapa cancelada, devolviendo jugadores a la cola.")
-            # Los 'players' venían como lista de IDs
-            # Hacemos match con los tuples originales para devolver nombre:
             for uid, name in team1 + team2:
                 add_player(uid, name)
+            # Tras devolver jugadores, refrescamos cola
+            if queue_view:
+                await queue_view.refresh_message()
             return
 
         # Confirmamos el mapa y arrancamos votación final, pasando también el state
@@ -51,7 +59,6 @@ async def end_match(state: dict):
     text_channel = state.get("text_channel")
     voice_channels = state.get("voice_channels", [])
 
-    # Elimina los canales de la partida
+    # Elimina los canales de la partida (y la categoría) y limpia estado
     await delete_private_channels(text_channel, voice_channels)
-    # Limpia el estado de la partida activa
     clear_active_match()

@@ -13,9 +13,11 @@ logging.basicConfig(level=logging.INFO)
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
+queue_view = None
 
 @bot.event
 async def on_ready():
+    global queue_view
     logging.info(f"Bot conectado como {bot.user}")
     init_db()
 
@@ -31,16 +33,11 @@ async def on_ready():
         color=discord.Color.blue()
     )
 
-    # 2) Creamos la vista SIN pasar None, sino placeholder
-    view = QueueView(None)
+    queue_view = QueueView(None)
+    static_msg = await lobby.send(embed=embed, view=queue_view)
+    queue_view.static_message = static_msg
 
-    # 3) Enviamos el mensaje y capturamos la referencia
-    static_msg = await lobby.send(embed=embed, view=view)
-
-    # 4) Inyectamos esa referencia en la vista
-    view.static_message = static_msg
-
-    # 5) Arrancamos el loop
+    # Arrancar el loop de revisión de cola
     check_queue.start(guild)
 
 @tasks.loop(seconds=5)
