@@ -10,7 +10,7 @@ async def start_match(bot, guild):
         return
 
     text_channel, voice1, voice2 = await create_private_channels(guild, team1, team2)
-    await start_mode_voting(bot, text_channel, team1 + team2)
+    await start_map_voting(bot, text_channel, team1 + team2)
 
     logging.info("[Match] Partida iniciada.")
     return {
