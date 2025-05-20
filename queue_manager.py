@@ -41,7 +41,7 @@ def is_ready():
     """
     Comprueba si hay al menos 2 jugadores (o ajustar según LOBBY size).
     """
-    return len(player_queue) >= 2
+    return len(player_queue) == 2
 
 
 def form_teams():
