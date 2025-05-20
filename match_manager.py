@@ -10,7 +10,12 @@ async def start_match(bot, guild):
         return
 
     text_channel, voice1, voice2 = await create_private_channels(guild, team1, team2)
-    await start_map_voting(bot, text_channel, team1 + team2)
+
+    async def on_map_voted(winning_map, players):
+        await text_channel.send(f"✅ Mapa confirmado: **{winning_map}**")
+        await start_result_voting(text_channel, players)
+
+    await start_map_voting(text_channel, team1 + team2, on_complete=on_map_voted)
 
     logging.info("[Match] Partida iniciada.")
     return {
@@ -19,6 +24,7 @@ async def start_match(bot, guild):
         "text_channel": text_channel,
         "voice_channels": [voice1, voice2],
     }
+
 async def end_match(state: dict):
     # state contiene team1, team2, text_channel, voice_channels
     text_channel = state["text_channel"]

@@ -60,19 +60,15 @@ class MapVotingView(ui.View):
             await self.finish()
 
     async def finish(self):
-        # determina mapa ganador
         winner = max(self.votes.items(), key=lambda x: x[1])[0]
         await self.channel.send(f"🗺️ El mapa ganador es **{winner}**")
-
-        # el Equipo 1 hostea
         await self.channel.send("👑 El **Equipo 1** hostea la partida.")
 
-        # elige host aleatorio (opcional si quieres override)
-        # host = pick_random_host(list(self.players))
-        # await self.channel.send(f"👑 El jugador <@{host}> será host.")
+        if self.on_complete:
+            await self.on_complete(winner, list(self.players))
+        else:
+            await start_result_voting(self.channel, list(self.players))
 
-        # lanza la siguiente fase de votación de resultado
-        await start_result_voting(self.channel, self.players)
 
     @ui.button(label="Cancelar votación", style=discord.ButtonStyle.red, custom_id="cancel_map_vote")
     async def cancel_button(self, interaction: discord.Interaction, button: ui.Button):
@@ -90,13 +86,11 @@ class MapVoteButton(ui.Button):
         await self.parent.vote(interaction, self.label)
 
 
-async def start_map_voting(channel: discord.TextChannel, players: list[int]):
-    """
-    Inicia la votación de mapas.
-    """
+async def start_map_voting(channel: discord.TextChannel, players: list[int], on_complete=None):
     await channel.send("🗳️ Empieza la votación de mapas. Tienes 1 minuto para votar.")
-    view = MapVotingView(channel, players, on_complete=None)
+    view = MapVotingView(channel, players, on_complete)
     await channel.send(view=view)
+
 
 
 async def start_result_voting(channel: discord.TextChannel, players: list[int]):
