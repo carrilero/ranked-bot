@@ -1,4 +1,4 @@
-from queue_manager import form_teams, get_active_match, clear_active_match
+from queue_manager import form_teams, get_active_match, clear_active_match, reset_queue
 from voice_text_channels import create_private_channels, delete_private_channels
 from voting_system import start_map_voting, start_result_voting
 import logging
@@ -30,11 +30,12 @@ async def start_match(bot, guild):
         # Confirmar mapa elegido
         await text_channel.send(f"✅ Mapa confirmado: **{winning_map}**")
         # Iniciar votación de resultado
-        await start_result_voting(text_channel, players)
+        await start_result_voting(text_channel, players, state)
 
     # Iniciar votación de mapas
     # Pasamos la lista de tuplas (id, name) para la cola, pero la votación usa solo ids
     players_ids = [uid for uid, _ in team1 + team2]
+    reset_queue()
     await start_map_voting(text_channel, players_ids, on_complete=on_map_voted)
 
     logging.info("[Match] Partida iniciada.")

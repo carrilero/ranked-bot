@@ -76,3 +76,9 @@ def clear_active_match():
     global active_match
     active_match = None
 
+def reset_queue():
+    """Vacía la cola por completo."""
+    global player_queue
+    player_queue = []
+    logging.info("[Queue] Cola reseteada tras iniciar partida")
+

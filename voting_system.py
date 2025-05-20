@@ -106,7 +106,7 @@ async def start_map_voting(
     view = MapVotingView(channel, players, on_complete=on_complete)
     await channel.send(view=view)
 
-async def start_result_voting(channel: discord.TextChannel, players: list[int]):
+async def start_result_voting(channel: discord.TextChannel, players: list[int], state: dict):
     """Votación final: qué equipo ganó."""
     class ResultView(ui.View):
         def __init__(self):
@@ -145,6 +145,9 @@ async def start_result_voting(channel: discord.TextChannel, players: list[int]):
 
         async def finish(self):
             winner = max(self.votes, key=self.votes.get)
-            await channel.send(f"🏆 La partida ha terminado. Ha ganado **{winner}**.")
+            await channel.send(f"🏆 Ha ganado **{winner}**.")
+            # Aquí cerramos canales de la partida
+            await delete_private_channels(state["text_channel"], state["voice_channels"])
+            clear_active_match()
 
     await channel.send("🗳️ Votación final: ¿Qué equipo ha ganado?", view=ResultView())
