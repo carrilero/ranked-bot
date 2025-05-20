@@ -5,6 +5,8 @@ from config import MAPS
 from utils import pick_random_host
 from voice_text_channels import delete_private_channels
 import asyncio
+from queue_manager import clear_active_match
+
 
 async def cancel_match(channel: discord.TextChannel):
     """Elimina la categoría y todos los canales de la partida."""

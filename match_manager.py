@@ -1,5 +1,5 @@
 # match_manager.py
-from queue_manager import form_teams, clear_active_match, reset_queue, add_player
+from queue_manager import form_teams, clear_active_match, reset_queue, add_player, active_match
 from voice_text_channels import create_private_channels, delete_private_channels
 from voting_system import start_map_voting, start_result_voting
 import logging

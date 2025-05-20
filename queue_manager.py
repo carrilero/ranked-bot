@@ -8,15 +8,25 @@ active_match = None
 
 def add_player(user_id, display_name):
     """
-    Añade un jugador a la cola si no está ya, guardando su ID y nombre.
+    Añade un jugador a la cola si no está ya y no forma parte del active_match.
+    Devuelve True si se añadió, False en caso contrario.
     """
-    if (user_id, display_name) not in player_queue:
-        player_queue.append((user_id, display_name))
-        logging.info(f"[Queue] Añadido {(user_id, display_name)}")
-    else:
-        logging.info(f"[Queue] {(user_id, display_name)} ya estaba en la cola")
+    # Check en la cola
+    if any(user_id == uid for uid, _ in player_queue):
+        logging.info(f"[Queue] {user_id} ya está en la cola")
+        return False
 
+    # Check en la partida activa
+    if active_match:
+        team1, team2 = active_match
+        if any(user_id == uid for uid, _ in team1 + team2):
+            logging.info(f"[Queue] {user_id} ya está en partida activa")
+            return False
 
+    # Si pasa ambos checks, lo añadimos
+    player_queue.append((user_id, display_name))
+    logging.info(f"[Queue] Añadido {(user_id, display_name)}")
+    return True
 def remove_player(user_id):
     """
     Elimina un jugador de la cola por su ID.
